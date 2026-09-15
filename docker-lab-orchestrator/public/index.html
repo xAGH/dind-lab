@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laboratorio Docker — panel de control</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Laboratorio Docker-in-Docker</h1>
+    <p class="subtitle">docker-lab.areasoftccyt.com — un aprendiz por path, on/off bajo demanda</p>
+  </header>
+
+  <main>
+    <section class="toolbar">
+      <button id="btn-add">+ Agregar aprendiz</button>
+      <button id="btn-bulk">Generar en lote</button>
+      <button id="btn-refresh" title="Actualizar estado">Actualizar</button>
+    </section>
+
+    <table id="table">
+      <thead>
+        <tr>
+          <th>Aprendiz</th>
+          <th>Estado</th>
+          <th>Acceso</th>
+          <th>Clave</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="5" class="empty">Cargando…</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
