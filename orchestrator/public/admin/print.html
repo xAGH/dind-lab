@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Credenciales — Laboratorio Docker</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px; font-family: 'Segoe UI', system-ui, sans-serif; color: #0f172a; background: #fff;
+    }
+    h1 { font-size: 1.1rem; margin: 0 0 4px; }
+    .subtitle { color: #64748b; font-size: 0.8rem; margin: 0 0 20px; }
+    .toolbar { margin-bottom: 20px; }
+    .toolbar button {
+      padding: 8px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f1f5f9; cursor: pointer;
+    }
+    .grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    }
+    .card {
+      border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px; break-inside: avoid;
+    }
+    .card .id { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+    .card .field { font-size: 0.8rem; margin-bottom: 3px; }
+    .card .field b { font-family: ui-monospace, monospace; }
+    .card .url { font-size: 0.72rem; color: #334155; word-break: break-all; }
+    .empty { color: #64748b; padding: 40px 0; text-align: center; }
+    @media print {
+      .toolbar { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Laboratorio Docker-in-Docker — credenciales</h1>
+  <p class="subtitle" id="generated-at"></p>
+  <div class="toolbar">
+    <button type="button" onclick="window.print()">Imprimir / guardar como PDF</button>
+  </div>
+  <div class="grid" id="grid">
+    <p class="empty">Cargando…</p>
+  </div>
+
+  <script>
+    async function load() {
+      document.getElementById('generated-at').textContent = `Generado ${new Date().toLocaleString('es-CO')}`;
+      const res = await fetch('/api/admin/students', { credentials: 'same-origin' });
+      if (!res.ok) {
+        document.getElementById('grid').innerHTML = '<p class="empty">No se pudo cargar la lista (¿sesion expirada?).</p>';
+        return;
+      }
+      const students = await res.json();
+      const grid = document.getElementById('grid');
+      if (students.length === 0) {
+        grid.innerHTML = '<p class="empty">Aun no hay aprendices.</p>';
+        return;
+      }
+      grid.innerHTML = students
+        .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
+        .map(
+          (s) => `
+            <div class="card">
+              <div class="id">${s.id}</div>
+              <div class="field">Clave: <b>${s.password}</b></div>
+              <div class="field">Grupo: ${s.group || 'default'}</div>
+              <div class="url">docker-lab.../${s.id}/</div>
+            </div>
+          `,
+        )
+        .join('');
+    }
+    load();
+  </script>
+</body>
+</html>

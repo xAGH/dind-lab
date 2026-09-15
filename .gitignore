@@ -1,0 +1,7 @@
+.env
+data/
+node_modules/
+dist/
+*.log
+lab-image/seed/*.tar
+.impeccable/

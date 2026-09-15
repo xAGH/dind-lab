@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel del laboratorio</title>
+  <link rel="stylesheet" href="/admin/style.css" />
+</head>
+<body>
+  <div id="login-screen">
+    <div class="login-card">
+      <h1>Panel del laboratorio</h1>
+      <p class="subtitle">Docker-in-Docker — acceso de instructor</p>
+      <form id="login-form">
+        <label for="user">Usuario</label>
+        <input type="text" id="user" name="user" autocomplete="username" required />
+        <label for="password">Clave</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required />
+        <p class="error-text" id="login-error"></p>
+        <button type="submit" class="primary">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <h1>Laboratorio Docker-in-Docker</h1>
+        <div class="subtitle">Un aprendiz por path, on/off bajo demanda</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="quota" id="quota">—</span>
+        <button type="button" id="btn-print" title="Hoja de credenciales imprimible">🖨️ Imprimir</button>
+        <button type="button" id="btn-export" title="Exportar CSV">⬇️ CSV</button>
+        <button type="button" id="btn-logout" class="ghost">Salir</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="tabs" id="group-tabs"></div>
+
+      <section class="toolbar">
+        <button type="button" id="btn-add" class="primary">+ Agregar aprendiz</button>
+        <button type="button" id="btn-bulk">Generar en lote</button>
+        <span class="spacer"></span>
+        <span class="meter" id="selection-count"></span>
+        <button type="button" id="btn-activate-selected" disabled>Encender seleccionados</button>
+        <button type="button" id="btn-deactivate-selected" disabled>Apagar seleccionados</button>
+        <button type="button" id="btn-refresh" title="Actualizar estado">↻ Actualizar</button>
+      </section>
+
+      <div class="table-wrap">
+        <table id="table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="select-all" /></th>
+              <th>Aprendiz</th>
+              <th>Grupo</th>
+              <th>Estado</th>
+              <th>Acceso</th>
+              <th>Clave</th>
+              <th>CPU / RAM</th>
+              <th>Disco</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="9" class="empty">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="/admin/js/main.js"></script>
+</body>
+</html>

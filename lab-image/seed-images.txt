@@ -1,0 +1,10 @@
+# Una imagen por linea (se ignoran lineas vacias y comentarios).
+# `make seed` las descarga y las empaqueta en lab-image/seed/*.tar para que
+# los aprendices las tengan precargadas sin salir a internet ni chocar con
+# el rate limit de Docker Hub. Ajusta esta lista al tema de la clase.
+#
+# Ejemplo para un tema de compose + nginx + base de datos:
+# nginx:alpine
+# alpine:3.20
+# postgres:16-alpine
+# httpd:alpine

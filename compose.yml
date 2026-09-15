@@ -1,0 +1,88 @@
+services:
+  orchestrator:
+    build: ./orchestrator
+    image: dind-lab-orchestrator:latest
+    container_name: dind-lab-orchestrator
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - LAB_IMAGE=${LAB_IMAGE:-docker-lab:latest}
+      - LAB_NETWORK=${LAB_NETWORK:-lab-net}
+      - LAB_HOST=${LAB_HOST:-docker-lab.areasoftccyt.com}
+      - LAB_ENTRYPOINT=${LAB_ENTRYPOINT:-websecure}
+      - LAB_CERTRESOLVER=${LAB_CERTRESOLVER:-le}
+      - LAB_MEM_LIMIT_MB=${LAB_MEM_LIMIT_MB:-1024}
+      - LAB_MEM_RESERVATION_MB=${LAB_MEM_RESERVATION_MB:-256}
+      - LAB_CPUS=${LAB_CPUS:-2.0}
+      - LAB_CPU_SHARES=${LAB_CPU_SHARES:-512}
+      - LAB_PIDS_LIMIT=${LAB_PIDS_LIMIT:-512}
+      - LAB_MAX_ACTIVE=${LAB_MAX_ACTIVE:-30}
+      - LAB_IDLE_TIMEOUT_MIN=${LAB_IDLE_TIMEOUT_MIN:-0}
+      - LAB_RECONCILE_CONCURRENCY=${LAB_RECONCILE_CONCURRENCY:-4}
+      - LAB_ACTION_CONCURRENCY=${LAB_ACTION_CONCURRENCY:-4}
+      - REGISTRY_MIRROR_URL=${REGISTRY_MIRROR_URL:-http://registry-mirror:5000}
+      - ROSTER_PATH=/app/data/roster.json
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - PORT=3000
+      - NODE_ENV=production
+    volumes:
+      # Necesario para crear/arrancar/detener los contenedores DinD de cada aprendiz.
+      # Equivale a acceso root sobre el host: nunca exponer este servicio sin
+      # el IPAllowList de mas abajo.
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Persiste el roster (aprendices + claves) entre reinicios. Unica copia real.
+      - ./data:/app/data
+    networks:
+      - lab-net
+    depends_on:
+      - registry-mirror
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.lab-panel.loadbalancer.server.port=3000
+
+      # Panel de administracion + API protegida: restringido a la tailnet.
+      - traefik.http.routers.lab-admin.rule=Host(`${LAB_HOST}`) && (PathPrefix(`/admin`) || PathPrefix(`/api/admin`) || PathPrefix(`/api/auth`))
+      - traefik.http.routers.lab-admin.entrypoints=${LAB_ENTRYPOINT:-websecure}
+      - traefik.http.routers.lab-admin.tls.certresolver=${LAB_CERTRESOLVER:-le}
+      - traefik.http.routers.lab-admin.priority=10
+      - traefik.http.routers.lab-admin.service=lab-panel
+      - traefik.http.routers.lab-admin.middlewares=lab-admin-tailnet
+      - traefik.http.middlewares.lab-admin-tailnet.ipallowlist.sourcerange=${TAILNET_CIDR:-100.64.0.0/10}
+
+      # Landing del aprendiz: publica, sin restriccion de IP. Prioridad baja
+      # a proposito para que los routers PathPrefix(/<id>) de cada instancia
+      # (que Traefik descubre solo, via el docker provider) ganen siempre.
+      - traefik.http.routers.lab-student.rule=Host(`${LAB_HOST}`) && PathPrefix(`/`)
+      - traefik.http.routers.lab-student.entrypoints=${LAB_ENTRYPOINT:-websecure}
+      - traefik.http.routers.lab-student.tls.certresolver=${LAB_CERTRESOLVER:-le}
+      - traefik.http.routers.lab-student.priority=1
+      - traefik.http.routers.lab-student.service=lab-panel
+
+  # Cache de Docker Hub para toda la clase: lo que un aprendiz descarga lo
+  # aprovechan los demas, y evita el rate limit de Docker Hub con 30 pulls
+  # simultaneos. No se expone fuera de la red del lab.
+  registry-mirror:
+    image: registry:2
+    container_name: dind-lab-registry-mirror
+    restart: unless-stopped
+    environment:
+      - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
+    volumes:
+      - registry-mirror-data:/var/lib/registry
+    networks:
+      - lab-net
+
+networks:
+  lab-net:
+    name: ${LAB_NETWORK:-lab-net}
+    external: true
+    # Se crea a mano antes del primer `docker compose up` (ver README):
+    #   docker network create lab-net && docker network connect lab-net traefik
+    # Separada de tu red "public" a proposito: los labs de los aprendices ya
+    # no comparten red con el resto de tus servicios.
+
+volumes:
+  registry-mirror-data:
