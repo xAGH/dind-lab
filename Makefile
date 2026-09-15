@@ -6,8 +6,7 @@ seed:
 
 # Construye la imagen del laboratorio y la del orquestador.
 build:
-	docker build -t docker-lab:latest ./lab-image
-	docker compose build orchestrator
+	docker compose build --profile build
 
 up:
 	mkdir -p data
@@ -34,4 +33,4 @@ smoke-test:
 # Genera el hash bcrypt para ADMIN_PASSWORD_HASH en .env.
 # Uso: make hash-password PASSWORD=tu-clave
 hash-password:
-	cd orchestrator && npm run hash-password -- "$(PASSWORD)"
+	docker compose run --rm --no-deps --entrypoint node orchestrator scripts/hash-password.mjs "$(PASSWORD)"

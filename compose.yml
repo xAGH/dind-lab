@@ -61,6 +61,14 @@ services:
       - traefik.http.routers.lab-student.priority=1
       - traefik.http.routers.lab-student.service=lab-panel
 
+  # Construye la imagen DinD que corre cada aprendiz. No arranca como
+  # servicio (profile build-only); se construye con `docker compose build`
+  # o con `docker compose up --build`.
+  lab-image:
+    build: ./lab-image
+    image: docker-lab:latest
+    profiles: [build]
+
   # Cache de Docker Hub para toda la clase: lo que un aprendiz descarga lo
   # aprovechan los demas, y evita el rate limit de Docker Hub con 30 pulls
   # simultaneos. No se expone fuera de la red del lab.
@@ -78,9 +86,8 @@ services:
 networks:
   lab-net:
     name: ${LAB_NETWORK:-lab-net}
-    external: true
-    # Se crea a mano antes del primer `docker compose up` (ver README):
-    #   docker network create lab-net && docker network connect lab-net traefik
+    # Compose crea esta red si no existe. Paso unico post-deploy:
+    #   docker network connect lab-net <nombre-de-tu-traefik>
     # Separada de tu red "public" a proposito: los labs de los aprendices ya
     # no comparten red con el resto de tus servicios.
 

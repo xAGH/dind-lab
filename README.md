@@ -25,40 +25,24 @@ dind-lab/
   utilidades (`git`, `compose`, `buildx` ya vienen incluidos), con soporte de imagenes
   precargadas y healthcheck propio.
 
-## 1. Requisitos previos
-
-- Traefik ya corriendo con el *Docker provider* y un `certresolver` configurado (TLS
-  real: los labs van por HTTPS, no HTTP plano).
-- Una red **dedicada** para el laboratorio, separada de tu red `public` (para que un
-  aprendiz no pueda ver el resto de tus servicios):
-
-  ```bash
-  docker network create lab-net
-  docker network connect lab-net traefik   # el nombre real de tu contenedor de Traefik
-  ```
-
-## 2. Configurar
+## 1. Configurar
 
 ```bash
 cp .env.example .env
 ```
 
-Ajusta al menos `LAB_HOST`, `LAB_CERTRESOLVER` (debe existir ya en tu Traefik) y
-`TAILNET_CIDR` (el rango de tu tailnet, para restringir el panel de administracion).
+Ajusta `LAB_HOST`, `LAB_CERTRESOLVER` (debe existir ya en tu Traefik) y `TAILNET_CIDR`.
 
-Genera las credenciales del panel:
+Genera las credenciales del panel (no requiere instalar nada local):
 
 ```bash
-cd orchestrator && npm install   # una sola vez, para poder correr el script localmente
-npm run hash-password -- "tu-clave-secreta"   # pega el resultado en ADMIN_PASSWORD_HASH
-openssl rand -hex 32                          # pega el resultado en SESSION_SECRET
-cd ..
+make hash-password PASSWORD="tu-clave-secreta"   # → pega en ADMIN_PASSWORD_HASH
+openssl rand -hex 32                              # → pega en SESSION_SECRET
 ```
 
-(Tambien puedes generarlos sin instalar nada local: `make hash-password PASSWORD=...`
-usa el contenedor una vez construido.)
+(El primer `make hash-password` construye el orquestador automaticamente si no existe.)
 
-## 3. Precargar imagenes del tema de la clase (opcional pero recomendado)
+## 2. Precargar imagenes del tema de la clase (opcional pero recomendado)
 
 Edita `lab-image/seed-images.txt` con las imagenes que se van a usar (`nginx:alpine`,
 `postgres:16-alpine`, etc.) y genera los tarballs:
@@ -68,16 +52,24 @@ make seed
 ```
 
 Estas imagenes quedan **horneadas en la imagen del laboratorio**: el aprendiz las tiene
-desde el primer `docker images`, sin descargar nada. Lo que se salga del guion lo cubre
-el *registry mirror* (paso siguiente): se descarga una sola vez para toda la clase en
-vez de que cada aprendiz golpee Docker Hub por separado.
+desde el primer `docker images`, sin descargar nada.
 
-## 4. Construir y desplegar
+## 3. Desplegar
 
 ```bash
-make build
-make up
+docker compose up --build -d
 ```
+
+Compose construye la imagen del lab y la del orquestador, crea la red `lab-net` si no
+existe, y levanta todo. Un solo paso.
+
+Despues, **una vez**, conecta Traefik a esa red:
+
+```bash
+docker network connect lab-net <nombre-de-tu-contenedor-traefik>
+```
+
+(Si Traefik ya estaba conectado a `lab-net` de antes, omite este paso.)
 
 Esto levanta el orquestador y el `registry-mirror`. El panel del instructor queda en
 `https://<LAB_HOST>/admin`, protegido por **tres capas**: login propio (usuario/clave),
