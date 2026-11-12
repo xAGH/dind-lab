@@ -1,0 +1,281 @@
+/* ============================================================
+   STUDENT — landing "gateway terminal"
+   El aprendiz entra, ve el estado de su instancia, y es
+   redirigido a su terminal cuando el instructor la activa.
+   ============================================================ */
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px;
+  background: var(--bg);
+  /* Resplandor sutil en la esquina superior para profundidad */
+  background-image: radial-gradient(ellipse 60% 40% at 50% -10%,
+    rgba(34,211,238,.06) 0%, transparent 70%);
+}
+
+/* ---- Ventana de terminal ---- */
+
+.term-window {
+  width: 100%;
+  max-width: 480px;
+  background: var(--s1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-xl);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.04) inset,
+    0 24px 72px rgba(0,0,0,.55);
+  overflow: hidden;
+}
+
+/* Barra de título estilo macOS terminal */
+.term-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 14px;
+  background: var(--s2);
+  border-bottom: 1px solid var(--hairline);
+  user-select: none;
+}
+
+.term-trafficlight {
+  display: flex;
+  gap: 6px;
+}
+
+.term-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.term-dot--close    { background: #ff5f56; }
+.term-dot--minimize { background: #febc2e; }
+.term-dot--expand   { background: #28c840; }
+
+.term-title-label {
+  flex: 1;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+  margin-right: 56px; /* centra visualmente teniendo en cuenta los puntos */
+}
+
+/* ---- Cuerpo de la terminal ---- */
+
+.term-body {
+  padding: 20px 22px 24px;
+  min-height: 220px;
+}
+
+/* ---- Panel de login ---- */
+
+.term-prompt-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+
+.term-ps1 {
+  color: var(--accent);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.term-cmd { color: var(--text); }
+
+/* Fila de input con prompt estilo shell */
+.term-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-m);
+  background: var(--bg);
+  overflow: hidden;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.term-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(34,211,238,.12);
+}
+
+.term-input-prompt {
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 12px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  user-select: none;
+  border-right: 1px solid var(--hairline);
+  height: 40px;
+  background: rgba(34,211,238,.04);
+}
+
+#student-id {
+  flex: 1;
+  padding: 0 12px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  outline: none;
+  letter-spacing: 0.02em;
+}
+
+#student-id::placeholder { color: var(--text-3); }
+
+.btn-connect {
+  padding: 0 16px;
+  height: 40px;
+  border: none;
+  border-left: 1px solid var(--hairline);
+  background: var(--accent);
+  color: #0a0e14;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--t-fast);
+}
+
+.btn-connect:hover   { background: color-mix(in srgb, var(--accent) 85%, white); }
+.btn-connect:active  { opacity: .9; }
+.btn-connect:disabled { opacity: .5; cursor: wait; }
+
+/* ---- Panel de estado ---- */
+
+.status-panel { display: none; }
+.status-panel.visible { display: block; }
+.login-panel.hidden   { display: none; }
+
+/* Output de terminal: cada línea de respuesta */
+.term-output {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--text-2);
+  margin: 0 0 14px;
+  white-space: pre-wrap;
+}
+
+.term-output-line { display: block; }
+.term-output-line::before { content: '> '; color: var(--text-3); }
+
+.term-output-line--ok    { color: var(--ok);   }
+.term-output-line--warn  { color: var(--warn); }
+.term-output-line--err   { color: var(--err);  }
+
+/* Estado badge (encima del output) */
+.status-id-line {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text-2);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-id-label { color: var(--accent); font-weight: 600; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  border: 1px solid;
+}
+
+.status-badge--activo    { color: var(--ok);   border-color: rgba(63,185,80,.4);   background: var(--ok-bg); }
+.status-badge--inactivo  { color: var(--idle); border-color: var(--hairline);       background: transparent; }
+.status-badge--iniciando { color: var(--warn); border-color: rgba(214,164,41,.4); background: var(--warn-bg); }
+.status-badge--deteniendo{ color: var(--warn); border-color: rgba(214,164,41,.4); background: var(--warn-bg); }
+.status-badge--error     { color: var(--err);  border-color: rgba(248,81,73,.4);    background: var(--err-bg); }
+
+.status-dot-inline {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-badge--activo    .status-dot-inline { background: var(--ok);   box-shadow: 0 0 4px var(--ok); }
+.status-badge--inactivo  .status-dot-inline { background: var(--idle); }
+.status-badge--iniciando .status-dot-inline { background: var(--warn); animation: pulse-dot 1.2s ease-in-out infinite; }
+.status-badge--error     .status-dot-inline { background: var(--err); }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .2; }
+}
+
+/* Barra de progreso indeterminada (estado iniciando) */
+.term-progress {
+  height: 2px;
+  background: var(--hairline);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.term-progress-bar {
+  height: 100%;
+  width: 40%;
+  border-radius: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: progress-slide 1.6s ease-in-out infinite;
+}
+
+@keyframes progress-slide {
+  0%   { transform: translateX(-150%); }
+  100% { transform: translateX(350%); }
+}
+
+/* Botón "usar otro identificador" */
+.btn-change-id {
+  display: inline-block;
+  margin-top: 16px;
+  background: none;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: transparent;
+  transition: color var(--t-fast), text-decoration-color var(--t-fast);
+}
+
+.btn-change-id:hover {
+  color: var(--text-2);
+  text-decoration-color: var(--text-3);
+}
+
+/* ---- Responsivo ---- */
+
+@media (max-width: 520px) {
+  body { padding: 16px; align-items: flex-start; padding-top: 48px; }
+  .term-window { max-width: 100%; }
+  .term-title-label { display: none; }
+}

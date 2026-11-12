@@ -42,8 +42,8 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  app.use('/admin', express.static(path.join(publicDir, 'admin')));
-  app.use('/', express.static(path.join(publicDir, 'student')));
+  // Sirve el build de Vite: public/index.html (/), public/admin/ (/admin/), public/assets/ (bundles)
+  app.use(express.static(publicDir));
 
   app.use(errorHandler);
 

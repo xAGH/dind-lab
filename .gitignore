@@ -2,6 +2,8 @@
 data/
 node_modules/
 dist/
+# Salida generada por Vite (se reconstruye con npm run build)
+orchestrator/public/
 *.log
 lab-image/seed/*.tar
 .impeccable/

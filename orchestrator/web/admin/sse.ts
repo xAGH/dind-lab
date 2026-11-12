@@ -1,7 +1,10 @@
-/** Conecta a /api/admin/events y llama a onUpdate() cada vez que algo cambia. Cae a polling si SSE no conecta. */
-export function connectEvents(onUpdate, { pollMs = 20000 } = {}) {
+/**
+ * Conecta a /api/admin/events y llama a onUpdate() cada vez que algo cambia.
+ * Cae a polling si SSE no conecta o si un proxy corta el stream silenciosamente.
+ */
+export function connectEvents(onUpdate: () => void, { pollMs = 20_000 } = {}): void {
   let usingFallback = false;
-  let pollTimer = null;
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
 
   const startFallback = () => {
     if (usingFallback) return;
@@ -11,12 +14,13 @@ export function connectEvents(onUpdate, { pollMs = 20000 } = {}) {
 
   try {
     const source = new EventSource('/api/admin/events');
+
     source.addEventListener('students-updated', () => onUpdate());
+
     source.onerror = () => {
-      // EventSource reintenta solo; agregamos un respaldo de polling por si el navegador
-      // o un proxy intermedio corta el stream silenciosamente.
       startFallback();
     };
+
     source.onopen = () => {
       usingFallback = false;
       if (pollTimer) {
@@ -28,6 +32,6 @@ export function connectEvents(onUpdate, { pollMs = 20000 } = {}) {
     startFallback();
   }
 
-  // Respaldo de baja frecuencia siempre activo, por si el SSE se queda "conectado" pero mudo.
+  // Respaldo de baja frecuencia siempre activo, por si el SSE queda mudo
   setInterval(onUpdate, pollMs * 3);
 }

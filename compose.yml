@@ -39,6 +39,8 @@ services:
       - lab-net
     depends_on:
       - registry-mirror
+    ports:
+      - "3000:3000"
     labels:
       - traefik.enable=true
       - traefik.http.services.lab-panel.loadbalancer.server.port=3000

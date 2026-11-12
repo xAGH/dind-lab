@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Credenciales — dind·lab</title>
+  <style>
+    /* Hoja de credenciales optimizada para impresión — fondo claro, ahorra tinta */
+    :root {
+      --text: #0f172a;
+      --muted: #475569;
+      --light: #94a3b8;
+      --border: #cbd5e1;
+      --bg: #fff;
+      --mono: 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-header { margin-bottom: 20px; }
+
+    .page-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 2px;
+      letter-spacing: -0.01em;
+    }
+
+    .page-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin: 0 0 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .btn-print {
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #f1f5f9;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .btn-print:hover { background: #e2e8f0; }
+
+    /* Cuadrícula de tarjetas — 3 columnas en A4 */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .card-id {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .card-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .card-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--light);
+      min-width: 50px;
+    }
+
+    .card-value {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    .card-url {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 7px;
+      word-break: break-all;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+    }
+
+    /* En impresión: sin toolbar, sin padding exterior */
+    @media print {
+      body { padding: 0; }
+      .toolbar { display: none; }
+      .grid { gap: 8px; }
+    }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1 class="page-title">dind·lab — credenciales</h1>
+    <p class="page-meta" id="meta"></p>
+  </div>
+
+  <div class="toolbar">
+    <button type="button" class="btn-print" onclick="window.print()">
+      Imprimir / guardar como PDF
+    </button>
+  </div>
+
+  <div class="grid" id="grid">
+    <p class="empty">Cargando…</p>
+  </div>
+
+  <script type="module">
+    async function load() {
+      document.getElementById('meta').textContent =
+        `Generado ${new Date().toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}`;
+
+      const res = await fetch('/api/admin/students', { credentials: 'same-origin' });
+      const grid = document.getElementById('grid');
+
+      if (!res.ok) {
+        grid.innerHTML = '<p class="empty">No se pudo cargar la lista (¿sesión expirada?).</p>';
+        return;
+      }
+
+      const students = await res.json();
+
+      if (students.length === 0) {
+        grid.innerHTML = '<p class="empty">Aún no hay aprendices.</p>';
+        return;
+      }
+
+      const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+      grid.innerHTML = [...students]
+        .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
+        .map((s) => `
+          <div class="card">
+            <div class="card-id">${esc(s.id)}</div>
+            <div class="card-row">
+              <span class="card-label">Clave</span>
+              <span class="card-value">${esc(s.password)}</span>
+            </div>
+            <div class="card-row">
+              <span class="card-label">Grupo</span>
+              <span class="card-value">${esc(s.group || 'default')}</span>
+            </div>
+            <div class="card-url">${esc(s.url || window.location.origin + '/')}</div>
+          </div>
+        `)
+        .join('');
+    }
+
+    load();
+  </script>
+</body>
+</html>

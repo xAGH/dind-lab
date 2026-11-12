@@ -1,0 +1,45 @@
+/* ============================================================
+   TOKENS — dind·lab design system
+   "Consola de desarrollador" — dark, mono data, semantic color
+   ============================================================ */
+:root {
+  /* --- Superficies (layered dark) --- */
+  --bg:       #0a0e14;
+  --s1:       #11161f;   /* panel base */
+  --s2:       #161c27;   /* raised surface */
+  --s3:       #1c2434;   /* hover / selected */
+  --hairline: #222c3a;   /* borders */
+
+  /* --- Texto --- */
+  --text:   #e6edf3;    /* primario */
+  --text-2: #8b97a7;    /* secundario / labels */
+  --text-3: #5a6676;    /* tenue / decorativo (usar solo en grande) */
+
+  /* --- Semántica de estado --- */
+  --accent:    #22d3ee;             /* cian terminal: acciones, links, foco */
+  --accent-bg: rgba(34,211,238,.08);
+  --ok:        #3fb950;             /* activo / healthy */
+  --ok-bg:     rgba(63,185,80,.10);
+  --warn:      #d6a429;             /* iniciando / deteniendo */
+  --warn-bg:   rgba(214,164,41,.10);
+  --err:       #f85149;             /* error / peligro */
+  --err-bg:    rgba(248,81,73,.10);
+  --idle:      #5a6676;             /* inactivo */
+  --idle-bg:   rgba(90,102,118,.10);
+
+  /* --- Tipografía --- */
+  --sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, 'Courier New', monospace;
+
+  /* --- Radios --- */
+  --r-s:    4px;
+  --r-m:    8px;
+  --r-l:    12px;
+  --r-xl:   16px;
+  --r-pill: 999px;
+
+  /* --- Transiciones --- */
+  --t-fast: 100ms cubic-bezier(.16,1,.3,1);
+  --t-std:  150ms cubic-bezier(.16,1,.3,1);
+  --t-slow: 250ms cubic-bezier(.16,1,.3,1);
+}

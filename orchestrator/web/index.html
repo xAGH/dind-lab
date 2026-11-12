@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dind·lab — terminal</title>
+</head>
+<body>
+
+  <div class="term-window">
+
+    <!-- Barra de título estilo macOS terminal -->
+    <div class="term-titlebar">
+      <div class="term-trafficlight" aria-hidden="true">
+        <span class="term-dot term-dot--close"></span>
+        <span class="term-dot term-dot--minimize"></span>
+        <span class="term-dot term-dot--expand"></span>
+      </div>
+      <span class="term-title-label">dind·lab — terminal</span>
+    </div>
+
+    <div class="term-body">
+
+      <!-- Panel de login -->
+      <div id="login-panel">
+        <div class="term-prompt-line">
+          <span class="term-ps1">lab:~$</span>
+          <span class="term-cmd">connect</span>
+        </div>
+        <form id="login-form" autocomplete="off" novalidate>
+          <div class="term-input-wrap">
+            <span class="term-input-prompt" aria-hidden="true">id &gt;</span>
+            <input
+              type="text"
+              id="student-id"
+              name="id"
+              placeholder="alumno1"
+              autocomplete="username"
+              spellcheck="false"
+              autocorrect="off"
+              autocapitalize="none"
+              required
+            />
+            <button type="submit" class="btn-connect">conectar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Panel de estado (visible tras ingresar id) -->
+      <div id="status-panel" class="status-panel">
+
+        <!-- Línea de prompt con el id del aprendiz -->
+        <div class="status-id-line" id="status-id-line"></div>
+
+        <!-- Badge de estado -->
+        <div style="margin-bottom:12px">
+          <span class="status-badge status-badge--inactivo" id="status-badge">
+            <span class="status-dot-inline"></span>inactivo
+          </span>
+        </div>
+
+        <!-- Barra de progreso (solo en "iniciando") -->
+        <div id="term-progress" class="term-progress" hidden>
+          <div class="term-progress-bar"></div>
+        </div>
+
+        <!-- Líneas de output estilo terminal -->
+        <div id="term-output" class="term-output"></div>
+
+        <button type="button" class="btn-change-id" id="change-id-btn">
+          usar otro identificador
+        </button>
+      </div>
+
+    </div><!-- /.term-body -->
+  </div><!-- /.term-window -->
+
+  <script type="module" src="./student/app.ts"></script>
+</body>
+</html>
